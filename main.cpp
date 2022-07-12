@@ -7,6 +7,7 @@
 #include <tchar.h>
 #include <string>
 #include <conio.h>
+#include <iostream>
 #include <random>
 #include "SerialClass.h"	// Library described above
 
@@ -25,6 +26,7 @@ char buffer;
 char line[256];
 int linecnt = 0;
 int r = 238, g = 228, b = 218;
+ll score = 0;
 class InputHandler {
 public:
     bool activated[8] = { 0, };//+x,-x,-y,y,12,3,6,9
@@ -73,6 +75,10 @@ void parse() {
             if (idx >= 6) return;
         }
     }
+    for (auto i : status) {
+        cout << i << " ";
+    }
+    cout << endl;
 }
 
 
@@ -94,6 +100,7 @@ bool move(int dir) {
                 while (is_in(k) && !board[k][x]) k += d;
                 if (!is_in(k)) break;
                 if (board[k][x] == board[j][x]) {
+                    score += board[j][x];
                     board[j][x] *= 2;
                     board[k][x] = 0;
                     j += d;
@@ -125,6 +132,7 @@ bool move(int dir) {
                 if (!is_in(k)) break;
                 if (board[y][j] == board[y][k]) {
                     board[y][j] *= 2;
+                    score += board[y][j];
                     board[y][k] = 0;
                     j += d;
                     moved = 1;
@@ -179,7 +187,6 @@ void generate_block() {
                 cnt++;
                 if (cnt == order) {
                     board[i][j] = generate();
-
                     return;
                 }
             }
@@ -223,7 +230,15 @@ VOID OnPaint(HDC hdc)
     }
     FontFamily  fontFamily(L"Times New Roman");
     SolidBrush  solidBrush(Color(255, 255, 255, 255));
+    SolidBrush  solidBrush2(Color(255, 0,0,0));
+    string str = to_string(score);
+    wstring wide_string = wstring(str.begin(), str.end());
+    const wchar_t* result = wide_string.c_str();
+    StringFormat stringFormat;
+    Font font(&fontFamily, 100, FontStyleRegular, UnitPixel);
+    RectF      rectF(sx, sy - blockSize, sx + blockSize * (str.size()), sy);
 
+    graphics.DrawString(result, -1, &font, rectF, &stringFormat, &solidBrush2);
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             if (!board[i][j]) continue;
@@ -239,49 +254,49 @@ VOID OnPaint(HDC hdc)
             graphics.DrawString(result, -1, &font, rectF, &stringFormat, &solidBrush);
         }
     }
-
-
 }
 
 LRESULT CALLBACK WndProc(HWND, UINT, WPARAM, LPARAM);
 INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
 {
-    HWND                hWnd;
-    MSG                 msg;
-    WNDCLASS            wndClass;
-    GdiplusStartupInput gdiplusStartupInput;
-    ULONG_PTR           gdiplusToken;
- 
-    // Initialize GDI+.
-    GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
+    
+        HWND                hWnd;
+        MSG                 msg;
+        WNDCLASS            wndClass;
+        GdiplusStartupInput gdiplusStartupInput;
+        ULONG_PTR           gdiplusToken;
 
-    wndClass.style = CS_HREDRAW | CS_VREDRAW;
-    wndClass.lpfnWndProc = WndProc;
-    wndClass.cbClsExtra = 0;
-    wndClass.cbWndExtra = 0;
-    wndClass.hInstance = hInstance;
-    wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
-    wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
-    wndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
-    wndClass.lpszMenuName = NULL;
-    wndClass.lpszClassName = TEXT("GettingStarted");
+        // Initialize GDI+.
+        GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
-    RegisterClass(&wndClass);
+        wndClass.style = CS_HREDRAW | CS_VREDRAW;
+        wndClass.lpfnWndProc = WndProc;
+        wndClass.cbClsExtra = 0;
+        wndClass.cbWndExtra = 0;
+        wndClass.hInstance = hInstance;
+        wndClass.hIcon = LoadIcon(NULL, IDI_APPLICATION);
+        wndClass.hCursor = LoadCursor(NULL, IDC_ARROW);
+        wndClass.hbrBackground = (HBRUSH)GetStockObject(WHITE_BRUSH);
+        wndClass.lpszMenuName = NULL;
+        wndClass.lpszClassName = TEXT("GettingStarted");
 
-    hWnd = CreateWindow(
-        TEXT("GettingStarted"),   // window class name
-        TEXT("Getting Started"),  // window caption
-        WS_OVERLAPPEDWINDOW,      // window style
-        CW_USEDEFAULT,            // initial x position
-        CW_USEDEFAULT,            // initial y position
-        CW_USEDEFAULT,            // initial x size
-        CW_USEDEFAULT,            // initial y size
-        NULL,                     // parent window handle
-        NULL,                     // window menu handle
-        hInstance,                // program instance handle
-        NULL);                    // creation parameters
-    ShowWindow(hWnd, iCmdShow);
-    UpdateWindow(hWnd);
+        RegisterClass(&wndClass);
+
+        hWnd = CreateWindow(
+            TEXT("GettingStarted"),   // window class name
+            TEXT("Getting Started"),  // window caption
+            WS_OVERLAPPEDWINDOW,      // window style
+            CW_USEDEFAULT,            // initial x position
+            CW_USEDEFAULT,            // initial y position
+            CW_USEDEFAULT,            // initial x size
+            CW_USEDEFAULT,            // initial y size
+            NULL,                     // parent window handle
+            NULL,                     // window menu handle
+            hInstance,                // program instance handle
+            NULL);                    // creation parameters
+        ShowWindow(hWnd, iCmdShow);
+        UpdateWindow(hWnd);
+    
     Serial serial("COM7");
 
     generate_block();
@@ -290,11 +305,11 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
         if (buffer == '\n') {
             parse();
             inputHandler.update();
-
             linecnt = 0;
         }
         else {
-            line[linecnt++] = buffer;
+            line[linecnt] = buffer;
+            linecnt++;
         }
         TranslateMessage(&msg);
         DispatchMessage(&msg);
@@ -313,7 +328,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
 
 
     for (int i = 0; i < 4; i++) {
-        if (inputHandler.get(0, i) || inputHandler.get(1, i)) {
+        if (inputHandler.get(1, i)) {
             move(i);
             generate_block();
         }
