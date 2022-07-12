@@ -19,21 +19,23 @@ using ll = long long;
 vector<vector<ll> > board(4, vector<ll>(4, 0));
 int n = 4;
 int dx[4] = { 1,0,-1,0 }, dy[4] = { 0,-1,0,1 };
-int r[2048], g[2048], b[2048];
-char incomingData[256] = ""; int dataLength = 255;
 int readResult = 0;
 vector<int> status(6);
+char buffer;
+char line[256];
+int linecnt = 0;
+int r = 238, g = 228, b = 218;
 class InputHandler {
-    bool activated[8] = {0,};//+x,-x,-y,y,12,3,6,9
-    bool just_activated[8]={0,};
+    bool activated[8] = { 0, };//+x,-x,-y,y,12,3,6,9
+    bool just_activated[8] = { 0, };
 public:
     InputHandler() {}
     void update() {
         for (int i = 0; i < 4; i++) {
-            just_activated[i + 4] = status[i+2];
+            just_activated[i + 4] = status[i + 2];
         }
         for (int i = 0; i < 2; i++) {
-            just_activated[i * 2] = status[i] ==0 ;
+            just_activated[i * 2] = status[i] == 0;
             just_activated[i * 2 + 1] = status[i] >= 650;
         }
         for (int i = 0; i < 8; i++) {
@@ -44,12 +46,12 @@ public:
     }
     bool get(int inputType, int id) {
         if (inputType == 0) {
-            if (1 <= id && id <= 2) return just_activated[3-id];
+            if (1 <= id && id <= 2) return just_activated[3 - id];
             return just_activated[id];
         }
         else {
             //0,1,2,3->3,0,1,2
-            id = (id+3) % 4;
+            id = (id + 3) % 4;
             return just_activated[id + 4];
         }
     }
@@ -57,22 +59,18 @@ public:
 
 InputHandler inputHandler;
 void parse() {
-    int idx = 0;
-    string s;
-    for (int i = 0; i<255; i++) {
-        if (incomingData[i]<'0' || incomingData[i]>'9' ) {
-            int t=0;
-            for (auto j : s) {
+    int idx = 0, s = 0;
+    for (int i = 0; i < 255; i++) {
+        if (line[i] < '0' || line[i]>'9') {
+            int t = 0;
+            for (int j = s; j < i;j++) {
                 t *= 10;
-                t += j - '0';
+                t += line[j] - '0';
             }
             status[idx] = t;
             idx++;
-            s = "";
+            s = i + 1;
             if (idx >= 6) return;
-        }
-        else {
-            s.push_back(incomingData[i]);
         }
     }
 }
@@ -181,12 +179,12 @@ void generate_block() {
                 cnt++;
                 if (cnt == order) {
                     board[i][j] = generate();
+
                     return;
                 }
             }
         }
     }
-
 }
 int size(ll v) {
     int k = 1, ret = 0;
@@ -194,32 +192,9 @@ int size(ll v) {
         k *= 2;
         ret++;
     } return ret;
-}
+}   
 
-void setRGB(double rv, double gv, double bv) {
-    int i = 0;
-    for (; i < 2048 && i * rv <= 145; i++) {
-        r[i] = 100+i * rv;
-    }
-    for (; i < 2048; i++) {
-        r[i] = r[i - 1];
-    }
-    i = 0;
-    for (; i < 2048 && i * gv <= 145; i++) {
-        g[i] = 100+i * gv;
-    }
-    for (; i < 2048; i++) {
-        g[i] = g[i - 1];
-    }
-    i = 0;
-    for (; i<2048 && i * bv <= 145; i++) {
-        b[i] = 100+i * bv;
-    }
-    for (; i < 2048; i++) {
-        b[i] = b[i - 1];
-    }
 
-}
 VOID OnPaint(HDC hdc)
 {
     Graphics graphics(hdc);
@@ -228,28 +203,31 @@ VOID OnPaint(HDC hdc)
     int iScreenCy = GetSystemMetrics(SM_CYSCREEN);
 
     int blockSize = 100;
-    int sx = iScreenCx/2-blockSize*2, sy = iScreenCy/2-blockSize*2;
+    int sx = iScreenCx / 2 - blockSize * 2, sy = iScreenCy / 2 - blockSize * 2;
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
-            int v = size(board[i][j]);
-            v = min((int)v, 255);
-            SolidBrush solidBrush(Color(50, r[v], g[v], b[v]));
+            int rr = r, gg = g, bb = b;
+            if (!board[i][j]) {
+                rr = 187, gg = 173, bb = 160;
+            }
+            SolidBrush solidBrush(Color(255, rr, gg, bb));
+            
             graphics.FillRectangle(&solidBrush, sx + j * blockSize, sy + i * blockSize, blockSize, blockSize);
         }
     }
 
-    Pen      pen(Color(255, 30, 30, 30),4);
+    Pen      pen(Color(255, 30, 30, 30), 4);
     for (int i = 0; i < 5; i++) {
-        graphics.DrawLine(&pen, sx+0, sy+i * blockSize, sx+4 * blockSize, sy+i * blockSize);
-        graphics.DrawLine(&pen, sx+i * blockSize, sy+0, sx+i * blockSize, sy+4 * blockSize);
+        graphics.DrawLine(&pen, sx + 0, sy + i * blockSize, sx + 4 * blockSize, sy + i * blockSize);
+        graphics.DrawLine(&pen, sx + i * blockSize, sy + 0, sx + i * blockSize, sy + 4 * blockSize);
     }
     FontFamily  fontFamily(L"Times New Roman");
-    SolidBrush  solidBrush(Color(255, 255,255,255));
+    SolidBrush  solidBrush(Color(255, 255, 255, 255));
 
     for (int i = 0; i < 4; i++) {
         for (int j = 0; j < 4; j++) {
             if (!board[i][j]) continue;
-            RectF      rectF(sx+ blockSize *j, sy+ blockSize *i, sx+blockSize*(j+1), sy+blockSize*(i+1));
+            RectF      rectF(sx + blockSize * j, sy + blockSize * i, sx + blockSize * (j + 1), sy + blockSize * (i + 1));
             string str = to_string(board[i][j]);
             double len = str.size();
             double piece = 100 / len;
@@ -257,8 +235,7 @@ VOID OnPaint(HDC hdc)
 
             wstring wide_string = wstring(str.begin(), str.end());
             const wchar_t* result = wide_string.c_str();
-
-            graphics.DrawString(result, -1, &font, rectF, NULL, &solidBrush);
+            graphics.DrawString(result, -1, &font, rectF, &solidBrush);
         }
     }
 
@@ -304,18 +281,24 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
         NULL);                    // creation parameters
     ShowWindow(hWnd, iCmdShow);
     UpdateWindow(hWnd);
-    setRGB(5.0,0.0,0.0);
+    Serial serial("COM7");
+
     generate_block();
-    Serial* SP = new Serial("\\\\.\\COM4");
-    while (GetMessage(&msg, NULL, 0, 0) && can_move())
-    {
-        readResult = SP->ReadData(incomingData, dataLength);
-        incomingData[readResult] = 0;
-        parse(); //x y 12 3 6 9
-        inputHandler.update();
+    while (serial.IsConnected() && GetMessage(&msg, NULL, 0, 0) && can_move()) {
+        serial.ReadData(&buffer, 1);
+        if (buffer == '\n') {
+            parse();
+            inputHandler.update();
+
+            linecnt = 0;
+        }
+        else {
+            line[linecnt++] = buffer;
+        }
         TranslateMessage(&msg);
         DispatchMessage(&msg);
     }
+
 
     GdiplusShutdown(gdiplusToken);
     return msg.wParam;
@@ -327,7 +310,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message,
     HDC          hdc;
     PAINTSTRUCT  ps;
 
-    
+
     for (int i = 0; i < 4; i++) {
         if (inputHandler.get(0, i) || inputHandler.get(1, i)) {
             move(i);
