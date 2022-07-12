@@ -26,9 +26,9 @@ char line[256];
 int linecnt = 0;
 int r = 238, g = 228, b = 218;
 class InputHandler {
+public:
     bool activated[8] = { 0, };//+x,-x,-y,y,12,3,6,9
     bool just_activated[8] = { 0, };
-public:
     InputHandler() {}
     void update() {
         for (int i = 0; i < 4; i++) {
@@ -63,7 +63,7 @@ void parse() {
     for (int i = 0; i < 255; i++) {
         if (line[i] < '0' || line[i]>'9') {
             int t = 0;
-            for (int j = s; j < i;j++) {
+            for (int j = s; j < i; j++) {
                 t *= 10;
                 t += line[j] - '0';
             }
@@ -192,7 +192,7 @@ int size(ll v) {
         k *= 2;
         ret++;
     } return ret;
-}   
+}
 
 
 VOID OnPaint(HDC hdc)
@@ -211,7 +211,7 @@ VOID OnPaint(HDC hdc)
                 rr = 187, gg = 173, bb = 160;
             }
             SolidBrush solidBrush(Color(255, rr, gg, bb));
-            
+
             graphics.FillRectangle(&solidBrush, sx + j * blockSize, sy + i * blockSize, blockSize, blockSize);
         }
     }
@@ -235,7 +235,8 @@ VOID OnPaint(HDC hdc)
 
             wstring wide_string = wstring(str.begin(), str.end());
             const wchar_t* result = wide_string.c_str();
-            graphics.DrawString(result, -1, &font, rectF, &solidBrush);
+            StringFormat stringFormat;
+            graphics.DrawString(result, -1, &font, rectF, &stringFormat, &solidBrush);
         }
     }
 
@@ -250,7 +251,7 @@ INT WINAPI WinMain(HINSTANCE hInstance, HINSTANCE, PSTR, INT iCmdShow)
     WNDCLASS            wndClass;
     GdiplusStartupInput gdiplusStartupInput;
     ULONG_PTR           gdiplusToken;
-
+ 
     // Initialize GDI+.
     GdiplusStartup(&gdiplusToken, &gdiplusStartupInput, NULL);
 
