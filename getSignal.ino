@@ -3,6 +3,7 @@ const int buttonPin3 = 3;
 const int buttonPin4 = 4;
 const int buttonPin5 = 5;
 int clicked[4];
+int f=0;
 void setup() {
  
   Serial.begin(9600);                               // 시리얼 통신을 시작하며, 통신속도는 9600
@@ -14,11 +15,13 @@ void setup() {
 }
  
 void loop() {
- 
- 
-  int x = analogRead(0);                           // 변수 X에 아날로그 0번핀에 입력되는 신호를 대입
-  int y = analogRead(1);                           // 변수 Y에 아날로그 1번핀에 입력되는 신호를 대입
- 
+ if(f==0){
+  f=1;
+  return;
+ }  
+  int x = analogRead(1);                           // 변수 X에 아날로그 0번핀에 입력되는 신호를 대입
+  int y = analogRead(0);                           // 변수 Y에 아날로그 1번핀에 입력되는 신호를 대입
+  Serial.print(" ");
   Serial.print(x);
   Serial.print(" ");
   Serial.print(y);
